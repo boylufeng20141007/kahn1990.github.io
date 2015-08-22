@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="./module.css">
+	<script type="text/javascript" src="./jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="./ui-select.js"></script>
+	<style type="text/css">
+		#aa,#bb,#cc{float: left;margin:5px;}
+	</style>
+</head>
+<body>
+<div id="abc">
+	<div id="aa" class="ui-select w150"  data-name="aa">
+	  	<a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
+        <ul class="ui-select-content">
+            <li class="ui-select-item" data-value="a1" data-selected>a账号</li>
+            <li class="ui-select-item" data-value="a2">a设备ID</li>
+            <li class="ui-select-item" data-value="a3">aIP历史</li>
+            <li class="ui-select-item" data-value="a4">asequenceId</li>
+        </ul>
+    </div>
+    <div id="bb" class="ui-select w150" data-name="bb">
+	  	<a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
+        <ul class="ui-select-content">
+            <li class="ui-select-item" data-value="b1" data-selected>b账号</li>
+            <li class="ui-select-item" data-value="b2">b设备ID</li>
+            <li class="ui-select-item" data-value="b3">bIP历史</li>
+            <li class="ui-select-item" data-value="b4">bsequenceId</li>
+        </ul>
+    </div>
+    <div id="cc" class="ui-select w150" data-name="cc">
+	  	<a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
+        <ul class="ui-select-content">
+            <li class="ui-select-item" data-value="c1" data-selected>c账号</li>
+            <li class="ui-select-item" data-value="c2">c设备ID</li>
+            <li class="ui-select-item" data-value="c3">cIP历史</li>
+            <li class="ui-select-item" data-value="c4">csequenceId</li>
+        </ul>
+    </div>
+    <input class="sendjsontext" name="sendjsontext" style="display:none" data-aa="" data-bb="" data-cc=""/>
+</div>
+    <script type="text/javascript">
+        function tableinit(){
+            var aa = $("input.sendjsontext").attr("data-aa"),
+                bb = $("input.sendjsontext").attr("data-bb"),
+                cc = $("input.sendjsontext").attr("data-cc");
+            if(aa==''||bb==''||cc==''){
+                return false;
+            }
+            var sendjson = {
+                aa:aa,
+                bb:bb,
+                cc:cc
+            };
+            console.log(sendjson);
+            $.ajax({
+                url:'/sendjson.json',
+                type:'post',
+                dataType:'json',
+                data:{
+                    sendjson:sendjson
+                },
+                success: function(data) {
+                    //代码
+                }
+            })
+        }
+        $("#aa,#bb,#cc").selectInit({
+            callback:function(){
+                var _this = $(this);
+                var inputRefer = $("input.sendjsontext");
+                var val = _this.selectValue();
+                var textvalue = _this.find('.ui-select-content>li[data-value="'+val+'"]').text();
+                _this.find('.ui-select-input>input').attr('placeholder',textvalue)
+                inputRefer.attr('data-'+_this.attr("data-name"),val);
+                tableinit();
+            }
+        });
+    </script>
+</body>
+</html>
