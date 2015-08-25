@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-	<link rel="stylesheet" href="./module.css">
-	<script type="text/javascript" src="./jquery-1.8.3.min.js"></script>
-	<script type="text/javascript" src="./ui-select.js"></script>
-	<style type="text/css">
-		#aa,#bb,#cc{float: left;margin:5px;}
-	</style>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="./module.css">
+    <link rel="stylesheet" href="./bootstrap.min.css">
+    <script type="text/javascript" src="./jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="./ui-select.js"></script>
+    <script type="text/javascript" src="./simulationtest.js"></script>
+    <style type="text/css">
+        #aa,#bb,#cc{float: left;margin:5px;}
+        #tablebox{margin:5px;width:460px;}
+    </style>
 </head>
 <body>
 <div id="abc">
-	<div id="aa" class="ui-select w150"  data-name="aa">
-	  	<a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
+    <div id="aa" class="ui-select w150"  data-name="aa">
+        <a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
         <ul class="ui-select-content">
             <li class="ui-select-item" data-value="a1" data-selected>a账号</li>
             <li class="ui-select-item" data-value="a2">a设备ID</li>
@@ -22,7 +25,7 @@
         </ul>
     </div>
     <div id="bb" class="ui-select w150" data-name="bb">
-	  	<a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
+        <a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
         <ul class="ui-select-content">
             <li class="ui-select-item" data-value="b1" data-selected>b账号</li>
             <li class="ui-select-item" data-value="b2">b设备ID</li>
@@ -31,7 +34,7 @@
         </ul>
     </div>
     <div id="cc" class="ui-select w150" data-name="cc">
-	  	<a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
+        <a href="javascript:void(0)" class="ui-select-trigger"><span>快速搜索</span><i><b></b></i></a>
         <ul class="ui-select-content">
             <li class="ui-select-item" data-value="c1" data-selected>c账号</li>
             <li class="ui-select-item" data-value="c2">c设备ID</li>
@@ -41,41 +44,92 @@
     </div>
     <input class="sendjsontext" name="sendjsontext" style="display:none" data-aa="" data-bb="" data-cc=""/>
 </div>
+<div id="tablebox">
+    <table class="table table-striped jsontableinfo">
+<!--       <thead>
+        <tr>
+          <th>#</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Username</th>
+        </tr>
+      </thead> -->
+      <tbody>
+        <tr>
+          <th scope="row">1</th>
+          <td>Mark</td>
+          <td>Otto</td>
+          <td>@mdo</td>
+        </tr>
+      </tbody>
+    </table>
+</div>
     <script type="text/javascript">
-        function tableinit(){
+        function tableinit(aa,bb,cc){
+            var dataObj;
+            var sendjson = {
+                aa:aa,
+                bb:bb,
+                cc:cc
+            };//console.log(sendjson);
+            $.ajax({
+                url:'/sendjson.json',
+                type:'post',
+                dataType:'json',
+                contentType: "application/json; charset=utf-8",
+                data:{
+                    sendjson:sendjson
+                }
+            }).done(function(data){
+                dataObj = data;
+            }).fail(function(data){
+                //容错处理
+                dataObj = st.test.tabletest(aa,bb,cc);
+            });
+            return dataObj;
+        };
+        function creatTable (_that,fn){
             var aa = $("input.sendjsontext").attr("data-aa"),
                 bb = $("input.sendjsontext").attr("data-bb"),
                 cc = $("input.sendjsontext").attr("data-cc");
             if(aa==''||bb==''||cc==''){
                 return false;
-            }
-            var sendjson = {
-                aa:aa,
-                bb:bb,
-                cc:cc
             };
-            console.log(sendjson);
-            $.ajax({
-                url:'/sendjson.json',
-                type:'post',
-                dataType:'json',
-                data:{
-                    sendjson:sendjson
-                },
-                success: function(data) {
-                    //代码
-                }
-            })
-        }
+            //
+            //看这里！
+            //
+            //var data = tableinit(aa,bb,cc);//生产环境改成应用这个并把测试注释掉
+            var data = st.test.tabletest(aa,bb,cc);//测试模拟数据，注意一定要引用simulationtest.js文件
+            fn(data,_that);
+        };
         $("#aa,#bb,#cc").selectInit({
             callback:function(){
                 var _this = $(this);
                 var inputRefer = $("input.sendjsontext");
                 var val = _this.selectValue();
                 var textvalue = _this.find('.ui-select-content>li[data-value="'+val+'"]').text();
+                var _that = $('#tablebox');
                 _this.find('.ui-select-input>input').attr('placeholder',textvalue)
                 inputRefer.attr('data-'+_this.attr("data-name"),val);
-                tableinit();
+                //创建表单
+                creatTable(_that,function(data,_that){
+                    var detailBox = '',dataList = '';
+                    //注意AA,BB,CC字段替换为后台字段
+                    $.each(data,function(index,item){
+                        dataList+='<tr><td>'+item.AA+'</td><td>'+item.BB+'</td><td>'+item.CC+'</td></tr>';
+                    });
+                    _that.find(".jsontableinfo").remove();
+                    detailBox+='<table class="table table-striped jsontableinfo">';
+                    detailBox+='<tbody>';
+                    detailBox+= dataList;
+                    detailBox+='</tbody>';
+                    detailBox+='</table>';
+                    if(!_that.find(".jsontableinfo").length){
+                        _that.append(detailBox);
+                    }else{
+                        _that.find(".jsontableinfo").show();
+                    }
+                })
             }
         });
     </script>
